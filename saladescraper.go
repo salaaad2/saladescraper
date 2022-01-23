@@ -52,20 +52,24 @@ func getArticles(postUrls *list.List) {
 		}
 		buffer += postContent[postStart:postEnd]
 
-		// write buffer to opened file
+		// write buffer line by line to file
 		paraStart := strings.Index(buffer, "<p>")
 		paraEnd   := strings.Index(buffer, "</p>")
 		writer := bufio.NewWriter(file)
+
 		for paraStart != -1 && paraEnd != -1 && paraStart < paraEnd {
 			writer.WriteString(buffer[paraStart:paraEnd + 4] + "\n")
 			buffer = buffer[paraEnd + 4:]
 			// advancein buffer
 			header := strings.Index(buffer, "<h3>")
-			if header != -1 {
-
-			}
 			paraStart = strings.Index(buffer, "<p>")
-			paraEnd   = strings.Index(buffer, "</p>")
+			if header != -1 && header < paraStart {
+				paraStart = strings.Index(buffer, "<h3>")
+				paraEnd   = strings.Index(buffer, "</h3>")
+			} else {
+				paraStart = strings.Index(buffer, "<p>")
+				paraEnd   = strings.Index(buffer, "</p>")
+			}
 		}
 
 		// cleanup
