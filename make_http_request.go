@@ -11,8 +11,8 @@ import (
 
 func main() {
 	fmt.Println("--- Welcome to this amazing web scraper. this is intended for substack ---")
-	name := os.Args[1]
-	fmt.Println(name)
+	name := os.Args[1] // TODO:
+
 
 	// create url from parameter
 	one := "https://"
@@ -39,23 +39,26 @@ func main() {
 
 	// look for posts
 	titleStart := strings.Index(pageContent, searchStr)
-	titleEnd := strings.Index(pageContent, "class=\"post-preview-description\"")
+	titleEnd := strings.Index(pageContent, "/comments")
 	count := 0
 	for titleStart != -1 {
-		fmt.Println("DEBUG: start index: ", titleStart, "end index: ", titleEnd, "total length :", len(pageContent))
 
 		if titleEnd == -1 || titleStart == -1 {
 			break
 		}
 
-		pageTitle := (pageContent[titleStart + len(searchStr):titleEnd - 2])
-		fmt.Println("INFO: found the following post :\n ", pageTitle)
+		// pageTitle := (pageContent[titleStart:titleEnd])
+		// fmt.Println("INFO: found the following post :\n ", pageTitle)
 		fmt.Println("DEBUG: start index: ", titleStart, "end index: ", titleEnd)
 
-		pageContent = pageContent[titleEnd + len("class=\"post-preview-title newsletter\""):]
 
-		titleStart = strings.Index(pageContent, searchStr)
-		titleEnd = strings.Index(pageContent, "class=\"post-preview-title newsletter\"")
+		if (titleEnd - titleStart) > 100 {
+			pageContent = pageContent[titleEnd + len("/comments"):]
+			titleEnd = strings.Index(pageContent, "/comments")
+		} else {
+			pageContent = pageContent[titleStart + len(searchStr):]
+			titleStart = strings.Index(pageContent, searchStr)
+		}
 
 		count++
 	}
