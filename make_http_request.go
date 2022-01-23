@@ -8,12 +8,24 @@ import (
 	"os"
 	"fmt"
 	"strings"
+	"bufio"
 )
 
 func getArticles(postUrls *list.List) {
 	for e := postUrls.Front(); e != nil; e = e.Next() {
+		fmt.Println("INFO: writing content to : ", e.Value, ".txt")
 		fmt.Println("INFO: downloading ", e.Value)
-		u := e.Value.(string)
+		u := e.Value.(string) // convert list content to string
+
+		// create file
+		file, err := os.Create(u[34:] + ".txt")
+
+		if err != nil {
+			log.Fatal("failed to create file [", u, ".txt] skipping")
+			continue
+		}
+
+		// send GET to post url
 		response, err := http.Get(u)
 
 		if err != nil {
@@ -22,6 +34,7 @@ func getArticles(postUrls *list.List) {
 			continue
 		}
 
+		// convert GET response to string
 		pageInBytes, err := ioutil.ReadAll(response.Body)
 		postContent := string(pageInBytes)
 		if err != nil {
@@ -29,6 +42,23 @@ func getArticles(postUrls *list.List) {
 			continue
 		}
 
+		// look for post content and init title
+		buffer := "TMP, put title here \n"
+		postStart := strings.Index(postContent, "<div class=\"body markup\">")
+		postEnd := strings.Index(postContent, "post-footer")
+		if postEnd == -1 || postStart == -1 {
+			log.Fatal("error : could not find post content start & end : ", postStart, "|", postEnd)
+			continue
+		}
+		buffer += postContent[postStart:postEnd]
+
+		// write buffer to opened file
+		writer := bufio.NewWriter(file)
+		writer.WriteString(buffer)
+
+		// cleanup
+		writer.Flush()
+		file.Close()
 	}
 }
 
