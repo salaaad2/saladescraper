@@ -89,3 +89,4 @@ go.work
 
 goparser
 file
+*.txt
