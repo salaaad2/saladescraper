@@ -18,7 +18,7 @@ func getArticles(postUrls *list.List) {
 		u := e.Value.(string) // convert list content to string
 
 		// create file
-		file, err := os.Create(u[34:] + ".txt")
+		file, err := os.Create(u[34:] + ".html")
 
 		if err != nil {
 			log.Fatal("failed to create file [", u, ".txt] skipping")
@@ -45,7 +45,7 @@ func getArticles(postUrls *list.List) {
 		// look for post content and init title
 		buffer := "TMP, put title here \n"
 		postStart := strings.Index(postContent, "<div class=\"body markup\">")
-		postEnd := strings.Index(postContent, "post-footer")
+		postEnd   := strings.Index(postContent, "post-footer")
 		if postEnd == -1 || postStart == -1 {
 			log.Fatal("error : could not find post content start & end : ", postStart, "|", postEnd)
 			continue
@@ -53,8 +53,20 @@ func getArticles(postUrls *list.List) {
 		buffer += postContent[postStart:postEnd]
 
 		// write buffer to opened file
+		paraStart := strings.Index(buffer, "<p>")
+		paraEnd   := strings.Index(buffer, "</p>")
 		writer := bufio.NewWriter(file)
-		writer.WriteString(buffer)
+		for paraStart != -1 && paraEnd != -1 && paraStart < paraEnd {
+			writer.WriteString(buffer[paraStart:paraEnd + 4] + "\n")
+			buffer = buffer[paraEnd + 4:]
+			// advancein buffer
+			header := strings.Index(buffer, "<h3>")
+			if header != -1 {
+
+			}
+			paraStart = strings.Index(buffer, "<p>")
+			paraEnd   = strings.Index(buffer, "</p>")
+		}
 
 		// cleanup
 		writer.Flush()
