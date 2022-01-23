@@ -14,6 +14,8 @@ func main() {
 	fmt.Println("--- Welcome to this amazing web scraper. this is intended for substack ---")
 	name := os.Args[1] // TODO:
 
+	// list to hold all urls
+	postUrls := list.New()
 
 	// create url from parameter
 	one := "https://"
@@ -50,7 +52,7 @@ func main() {
 			titleStart = strings.Index(pageContent, searchStr)
 			titleEnd = strings.Index(pageContent, "/comments")
 		} else {
-			fmt.Println(pageContent[titleStart:titleEnd])
+			postUrls.PushBack(pageContent[titleStart:titleEnd])
 			pageContent = pageContent[titleEnd + len(searchStr + "/comments"):]
 			titleStart = strings.Index(pageContent, searchStr)
 			titleEnd = strings.Index(pageContent, "/comments")
@@ -61,6 +63,9 @@ func main() {
 		fmt.Println("ERROR: no posts to be found")
 	} else {
 		fmt.Println("INFO: found [", count, "] posts.")
+		for e := postUrls.Front(); e != nil; e = e.Next() {
+			fmt.Println(e.Value)
+		}
 	}
 }
 // <a href="https://graymirror.substack.com/p/a-clarification-on-ukraine" class="post-preview-title newsletter">
