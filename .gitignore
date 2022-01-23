@@ -89,5 +89,4 @@ go.work
 
 goparser
 file
-*.txt
 *.html
