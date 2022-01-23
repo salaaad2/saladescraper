@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -40,27 +41,21 @@ func main() {
 	// look for posts
 	titleStart := strings.Index(pageContent, searchStr)
 	titleEnd := strings.Index(pageContent, "/comments")
-	count := 0
-	for titleStart != -1 {
+	count := 0 // how many posts
 
-		if titleEnd == -1 || titleStart == -1 {
-			break
-		}
-
-		// pageTitle := (pageContent[titleStart:titleEnd])
-		// fmt.Println("INFO: found the following post :\n ", pageTitle)
-		fmt.Println("DEBUG: start index: ", titleStart, "end index: ", titleEnd)
-
+	for titleEnd != -1 && titleStart != -1 { // go through whole text
 
 		if (titleEnd - titleStart) > 100 {
-			pageContent = pageContent[titleEnd + len("/comments"):]
-			titleEnd = strings.Index(pageContent, "/comments")
-		} else {
 			pageContent = pageContent[titleStart + len(searchStr):]
 			titleStart = strings.Index(pageContent, searchStr)
+			titleEnd = strings.Index(pageContent, "/comments")
+		} else {
+			fmt.Println(pageContent[titleStart:titleEnd])
+			pageContent = pageContent[titleEnd + len(searchStr + "/comments"):]
+			titleStart = strings.Index(pageContent, searchStr)
+			titleEnd = strings.Index(pageContent, "/comments")
+			count++
 		}
-
-		count++
 	}
 	if count == 0 {
 		fmt.Println("ERROR: no posts to be found")
