@@ -11,14 +11,21 @@ import (
 	"bufio"
 )
 
-func getArticles(postUrls *list.List) {
+func getArticles(postUrls *list.List, path string) {
+	// create directory
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		log.Fatal("failed to create directory", path)
+		os.Exit(1)
+	}
 	for e := postUrls.Front(); e != nil; e = e.Next() {
 		fmt.Println("INFO: writing content to : ", e.Value, ".txt")
 		fmt.Println("INFO: downloading ", e.Value)
 		u := e.Value.(string) // convert list content to string
 
+
 		// create file
-		file, err := os.Create(u[34:] + ".html")
+		file, err := os.Create("./" + path + "/" + u[34:] + ".html")
 
 		if err != nil {
 			log.Fatal("failed to create file [", u, ".txt] skipping")
@@ -56,6 +63,8 @@ func getArticles(postUrls *list.List) {
 		paraStart := strings.Index(buffer, "<p>")
 		paraEnd   := strings.Index(buffer, "</p>")
 		writer := bufio.NewWriter(file)
+		writer.WriteString("<title> " + strings.ToUpper(u[34:]) + " </title>\n")
+		writer.WriteString("<h1> " + strings.ToUpper(u[34:]) + " </h1>\n")
 
 		for paraStart != -1 && paraEnd != -1 && paraStart < paraEnd {
 			writer.WriteString(buffer[paraStart:paraEnd + 4] + "\n")
@@ -132,6 +141,5 @@ func main() {
 	} else {
 		fmt.Println("INFO: found [", count, "] posts.")
 	}
-	getArticles(postUrls)
+	getArticles(postUrls, name)
 }
-// <a href="https://graymirror.substack.com/p/a-clarification-on-ukraine" class="post-preview-title newsletter">
