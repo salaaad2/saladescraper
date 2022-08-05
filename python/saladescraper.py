@@ -1,5 +1,8 @@
 import argparse
-from urllib.request import urlopen
+import json
+import requests
+import threading
+import os
 
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -11,48 +14,62 @@ def init_argparse() -> argparse.ArgumentParser:
         "-v", "--version", action="version",
         version = f"{parser.prog} version 0.0.1"
     )
-    parser.add_argument('target', nargs='*')
+    parser.add_argument('target', type=str)
     return parser
 
-def getArticles(target_name) -> str:
-    full_target = "{}{}{}{}{}".format(
+def get_article(article_url):
+    article_body = requests.get(article_url).text
+    art_name = article_url.split('/')[-1]
+    article_path = "./{}".format(
+        art_name
+    )
+    fo = open(art_name, "w")
+    fo.write(article_body)
+    fo.close()
+
+def get_article_list(target_name):
+    full_target = "{}{}{}{}".format(
         "https://",
         target_name,
         ".substack.com",
+        "/api/v1/archive?sort=new&search=&offset=1&limit=100",
     )
-    print("saladescraper: targeting: {}", full_target)
-    post_urls = []
-    home_request = urllib2.urlopen(full_target).read()
-    home_content = home_request.read()
-
-    # repeating pattern
-    post_str = full_target + "/p/"
-    post_start_index = str.find(post_str)
-    post_end_index = str.find("/comments")
+    print(f"saladescraper: targeting: {full_target}")
     post_count = 0
-    while post_start_index != -1 and post_end_index != -1:
-        if (post_end_index - post_start_index) > 100:
-            post_str = post_str[post_start_index + len(post_str)]
-            post_start_index = str.find(post_str)
-            post_end_index = str.find("/comments")
-        else:
-            post_str = post_str[post_start_index + len(post_str + "/comments")]
-            post_start_index = str.find(post_str)
-            post_end_index = str.find("/comments")
-            post_count += 1
-            post_urls.push_back(post_str.split(post_start_index, post_end_index - post_start_index))
+    post_urls = []
+    home_content = requests.get(full_target).text
+
+    json_response = json.loads(home_content)
+    post_list = []
+    for item in json_response:
+        post_urls.append(item['canonical_url'])
+        post_count += 1
+
     if post_count == 0:
-        return "no posts found"
+        return ["no posts found", ""]
+    else:
+        print(post_count)
+    return post_urls
 
-    home_request.close()
-    if len(main_contents) == 0:
-        return "error"
-
-    for post_url in post_urls:
-        print(post_url)
-    return "success"
-
-def main() -> None:
+def main():
     arg_parser = init_argparse()
     args = arg_parser.parse_args()
-    getArticles(args.target)
+    articles_list = get_article_list(args.target)
+    thread_list = []
+
+    if not os.path.exists(args.target):
+        os.mkdir(args.target)
+    os.chdir(args.target)
+    thread_list = []
+    for article in articles_list:
+        t = threading.Thread(target=get_article, args=(article,))
+        thread_list.append(t)
+
+    for t in thread_list:
+        t.start()
+    for t in thread_list:
+        t.join()
+    return 0
+
+if __name__ == '__main__':
+    main()
