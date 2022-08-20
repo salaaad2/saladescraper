@@ -1,18 +1,20 @@
 # SaladeScraper
 
-This is a very cool web scraper written in go (and python, btw)
-I think go is pretty cool for this kind of task (it was probably designed for it too(python is goo too)).
+This is a very cool web scraper that I started writing in go, then finished in python
+
+It is simple and for now only supports a single url and no custom options;
+the number of posts etched is hardcoded as 25, but you can ask it for more if you want
 
 # Usage
 
 ```bash
-# use the go version
+# use the python version
+cd python/
+python3 ./saladescraper.py `url`
+# OR, use the go version
 cd go/
 go build
 ./saladescraper `url`
-# OR, use the python version
-cd python/
-python3 ./saladescraper.py `url`
 ```
 
 # Future

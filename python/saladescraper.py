@@ -23,8 +23,35 @@ def get_article(article_url):
     article_path = "./{}".format(
         art_name
     )
-    fo = open(art_name, "w")
-    fo.write(article_body)
+    fo = open(art_name + ".html", "w")
+    # remove unnecessary
+    post_start = article_body.find("<div class=\"single-post-container\">")
+    post_end = article_body.find("post-footer")
+
+    full_str = ""
+    buffer = article_body[post_start: post_end]
+    paragraph_start = buffer.find("<p>")
+    paragraph_end = buffer.find("</p>")
+    full_str = "{}{}{}".format(
+        "<title>",
+        art_name,
+        "</title>\n",
+        "<h1>",
+        art_name,
+        "</h1>\n"
+    )
+    while paragraph_start != -1 and paragraph_end != -1:
+        full_str += buffer[paragraph_start: paragraph_end + 4]
+        buffer = buffer[paragraph_end + 4:]
+        header = buffer.find("<h3>")
+        if header != -1 and header < paragraph_start:
+            paragraph_start = buffer.find("<h3>")
+            paragraph_end = buffer.find("</h3>")
+        else:
+            paragraph_start = buffer.find("<p>")
+            paragraph_end = buffer.find("</p>")
+
+    fo.write(full_str)
     fo.close()
 
 def get_article_list(target_name):
@@ -32,7 +59,7 @@ def get_article_list(target_name):
         "https://",
         target_name,
         ".substack.com",
-        "/api/v1/archive?sort=new&search=&offset=1&limit=100",
+        "/api/v1/archive?sort=new&search=&offset=2&limit=25",
     )
     print(f"saladescraper: targeting: {full_target}")
     post_count = 0
