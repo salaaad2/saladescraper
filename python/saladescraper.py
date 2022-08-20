@@ -11,13 +11,22 @@ def init_argparse() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
-        "-v", "--version", action="version",
+        "--version", action="version",
         version = f"{parser.prog} version 0.0.1"
+    )
+
+    parser.add_argument(
+        "--limit", help="number of posts", type=int
+    )
+
+    parser.add_argument(
+        "--offset", help="offset from latest post", type=int
     )
     parser.add_argument('target', type=str)
     return parser
 
 def get_article(article_url):
+    print(f"GET: {article_url}")
     article_body = requests.get(article_url).text
     art_name = article_url.split('/')[-1]
     article_path = "./{}".format(
@@ -53,15 +62,19 @@ def get_article(article_url):
 
     fo.write(full_str)
     fo.close()
+    print(f"wrote: {article_path}")
 
-def get_article_list(target_name):
-    full_target = "{}{}{}{}".format(
+def get_article_list(target_name, limit, offset):
+    full_target = "{}{}{}{}{}{}{}".format(
         "https://",
         target_name,
         ".substack.com",
-        "/api/v1/archive?sort=new&search=&offset=2&limit=25",
+        "/api/v1/archive?sort=new&search=&offset=",
+        offset,
+        "&limit=",
+        limit
     )
-    print(f"saladescraper: targeting: {full_target}")
+    print(f"saladescraper: targeting: {target_name} getting [{limit}] articles starting at offset [{offset}]")
     post_count = 0
     post_urls = []
     home_content = requests.get(full_target).text
@@ -75,13 +88,13 @@ def get_article_list(target_name):
     if post_count == 0:
         return ["no posts found", ""]
     else:
-        print(post_count)
+        print("found posts, downloading")
     return post_urls
 
 def main():
     arg_parser = init_argparse()
     args = arg_parser.parse_args()
-    articles_list = get_article_list(args.target)
+    articles_list = get_article_list(args.target, args.limit, args.offset)
     thread_list = []
 
     if not os.path.exists(args.target):
