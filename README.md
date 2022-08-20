@@ -10,14 +10,15 @@ the number of posts etched is hardcoded as 25, but you can ask it for more if yo
 ```bash
 # use the python version
 cd python/
-python3 ./saladescraper.py `url`
+python3 ./saladescraper.py `url` [--limit n] [--offset n]
 # OR, use the go version
 cd go/
 go build
-./saladescraper `url`
+./saladescraper `url` 
 ```
 
-# Future
-- For now, the output is still html. I think it would be cool if it outputted markdown
-- include title
-- make big bucks
+The `limit` argument determines the number of articles to scrape
+The `offset` argument determines the post index to start scraping from
+It is useful because the likelihood of running into a `too many requests` error is likely.
+It is possible to see how many posts you got using your previous request, and to start another with that number as your offset argument
+
